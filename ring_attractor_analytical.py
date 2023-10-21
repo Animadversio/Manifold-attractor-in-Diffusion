@@ -10,8 +10,8 @@ plt.plot(r, fun)
 plt.axhline(0, color="k", linestyle="--")
 plt.show()
 #%%
-sigma2 = 0.1
-r = np.linspace(-5, 5, 1000)
+sigma2 = .7
+r = np.linspace(-3, 3, 1000)
 fun = r - spc.i1(r / sigma2) / spc.i0(r / sigma2)
 plt.plot(r, fun)
 plt.axhline(0, color="k", linestyle="--")
@@ -68,9 +68,9 @@ def r_ODE_traj(r0, sigma_values):
     r_values = odeint(dr_dsigma, r0, sigma_values)
     return r_values
 
-sigma_values = np.linspace(5, 0, 100)
+sigma_values = np.linspace(10, 0, 100)
 plt.figure(figsize=(6, 6))
-plt.plot(sigma_values, r_ODE_traj(5, sigma_values), label='$r(\sigma)$')
+plt.plot(sigma_values, r_ODE_traj(2, sigma_values), label='$r(\sigma)$')
 plt.title('Numerical Solution of the ODE')
 plt.xlabel('noise scale / time $\sigma$')
 plt.ylabel('Radius $r$')
