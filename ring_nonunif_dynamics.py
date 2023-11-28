@@ -73,7 +73,7 @@ for r_init_norm in [100, 50, 25, 12.5, 6, 3, 1.5, 1, 0.5, 0.2, 0.1, 0.04]:
     ttraj = ysol.t
     ytraj_tsr = np.stack([ysol.y for ysol in ysol_col])
     y_final_dist = np.stack([ysol.y[:,-1] for ysol in ysol_col])
-    #%%
+    #%% Plot the angular theta trajectories
     plt.figure()
     for ysol in ysol_col[::4]:
         # plt.plot(ysol.t[-10:], ysol.y[-1,-10:], color="gray", alpha=0.3)
@@ -85,7 +85,7 @@ for r_init_norm in [100, 50, 25, 12.5, 6, 3, 1.5, 1, 0.5, 0.2, 0.1, 0.04]:
     plt.title(f"Angular Trajectories for init r={r_init_norm}\n psi*={psi_peak / np.pi:.2f}$\pi$ gamma={gamma} R={R}")
     saveallforms(figdir, f"angular_traj_rinit{r_init_norm:.1f}_sigmamax{sigma_max}")
     plt.show()
-    #%%
+    #%% Plot the radial r trajectories
     plt.figure()
     for ysol in ysol_col[::4]:
         plt.plot(ysol.t[:], ysol.y[0, :], color="gray", alpha=0.2)
@@ -96,7 +96,7 @@ for r_init_norm in [100, 50, 25, 12.5, 6, 3, 1.5, 1, 0.5, 0.2, 0.1, 0.04]:
     plt.title(f"Radial Trajectories for init r={r_init_norm}\n psi*={psi_peak / np.pi:.2f}$\pi$ gamma={gamma} R={R}")
     saveallforms(figdir, f"radial_traj_rinit{r_init_norm:.1f}_sigmamax{sigma_max}")
     plt.show()
-    #%%
+    #%% Plot the trajectories in the plane
     plt.figure(figsize=[6, 6])
     for ysol in ysol_col[::4]:
         plt.plot(ysol.y[0, :] * np.cos(ysol.y[-1, :]),
@@ -110,7 +110,7 @@ for r_init_norm in [100, 50, 25, 12.5, 6, 3, 1.5, 1, 0.5, 0.2, 0.1, 0.04]:
     plt.title(f"Planar Trajectories for init r={r_init_norm}\n psi*={psi_peak / np.pi:.2f}$\pi$ gamma={gamma} R={R}")
     saveallforms(figdir, f"planar_traj_rinit{r_init_norm:.1f}_sigmamax{sigma_max}")
     plt.show()
-    #%% modulo 2pi
+    #%% final angle distribution modulo 2pi
     plt.figure()
     for time_idx in range(0, len(t_eval), 3):
         sigma = t_eval[time_idx]
@@ -125,9 +125,21 @@ for r_init_norm in [100, 50, 25, 12.5, 6, 3, 1.5, 1, 0.5, 0.2, 0.1, 0.04]:
     saveallforms(figdir, f"theta_dist_evolution_rinit{r_init_norm:.1f}_sigmamax{sigma_max}")
     plt.show()
 
+    #%% Plot the radial r trajectories
+    plt.figure()
+    for ysol in ysol_col[::4]:
+        alpha_t = 1 / np.sqrt(1 + ysol.t[:]**2)
+        plt.plot(- np.log10(ysol.t[:]), alpha_t * ysol.y[0, :], color="gray", alpha=0.2)
+    plt.axhline(R, color="r", linestyle="--")
+    # plt.xlim([sigma_min-0.2, sigma_max+0.2])
+    plt.xlabel("t (sigma=exp(-t))")
+    plt.ylabel("r (alpha_t * r_t)")
+    plt.title(f"Radial Trajectories for init r={r_init_norm}\n psi*={psi_peak / np.pi:.2f}$\pi$ gamma={gamma} R={R} VP convention")
+    saveallforms(figdir, f"radial_traj_rinit{r_init_norm:.1f}_sigmamax{sigma_max}_vp_expt")
+    plt.show()
 
 
-
+#%% Test density recovery
 
 
 
@@ -148,16 +160,34 @@ plt.figure()
 plt.hist(ytraj_tsr_chi[:, -1, -1] % (2 * np.pi), bins=50)
 plt.show()
 #%%
+sampleN = 10000
 tsteps = np.linspace(100, 0.005, 500)
-r_chi_init = 100 * scipy.stats.chi(2).rvs(10000)
-theta_dist = np.linspace(0, 2 * np.pi, 10000, endpoint=False)
+t_eval = np.logspace(np.log10(100-0.01),
+                     np.log10(0.005+0.0001), 20)
+r_chi_init = 100 * scipy.stats.chi(2).rvs(sampleN)
+theta_dist = np.linspace(0, 2 * np.pi, sampleN, endpoint=False)
 ysol_col = []
 for r_init, thete_init in tqdm(zip(r_chi_init, theta_dist)):
-    ysol = solve_ivp(polar_ode, t_span=[100, 0.005],
+    ysol = solve_ivp(polar_ode, t_span=[100, 0.005], t_eval=t_eval,
                      y0=np.array([r_init, thete_init]),
                      tfirst=True)
     ysol_col.append(ysol)
+ytraj_tsr_chi = np.stack([ysol.y for ysol in ysol_col])
+#%% final angle distribution modulo 2pi
+plt.figure()
+for time_idx in range(0, len(t_eval), 3):
+    sigma = t_eval[time_idx]
+    plt.hist(ytraj_tsr_chi[:, 1, time_idx] % (2*np.pi), bins=50, alpha=0.5, label=f"sigma={sigma:.2f}")
 
+plt.legend()
+plt.xticks([i * 2 * np.pi / 8 for i in range(9)],
+           [f"{i}$\pi$/4" for i in range(9)],)
+plt.xlim([0, 2 * np.pi])
+plt.xlabel("theta")
+plt.ylabel("count")
+plt.title(f"Evolution of theta distribution for init r={r_init_norm}\n psi*={psi_peak / np.pi:.2f}$\pi$ gamma={gamma} R={R}")
+saveallforms(figdir, f"theta_dist_evolution_chi2_init")
+plt.show()
 #%%
 y_final_dist_chi = np.stack([ysol.y[:,-1] for ysol in ysol_col])
 
