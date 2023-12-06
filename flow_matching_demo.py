@@ -19,16 +19,6 @@ def gen_sample(batch_size, ):
     y = torch.cat([y_up, y_down])
     return torch.stack([x, y], dim=1)
 
-#%%
-def gen_sample(batch_size, ):
-    x_up = torch.rand(batch_size // 2)
-    y_up = torch.rand(batch_size // 2)
-    x_down = - torch.rand(batch_size // 2)
-    y_down = - torch.rand(batch_size // 2)
-    x = torch.cat([x_up, x_down])
-    y = torch.cat([y_up, y_down])
-    return torch.stack([x, y], dim=1)
-
 
 def generate_spiral_samples_torch(n_points, a=1, b=0.2):
     """
@@ -304,6 +294,7 @@ def plot_flow_traj(x_sample_traj,):
 
 
     pass
+
 
 
 
