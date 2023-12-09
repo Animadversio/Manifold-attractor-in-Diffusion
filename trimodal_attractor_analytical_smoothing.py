@@ -10,7 +10,7 @@ import seaborn as sns
 # from core.utils.plot_utils import saveallforms
 R = 1
 angles = np.linspace(0, 2*np.pi, 3, endpoint=False)
-angles = np.linspace(0, 2*np.pi, 6, endpoint=False)
+# angles = np.linspace(0, 2*np.pi, 6, endpoint=False)
 pnts = R * np.stack([np.cos(angles), np.sin(angles)], axis=1)
 #%%
 def participants_func(pnts, xy_query, sigma):
@@ -23,11 +23,12 @@ def participants_func(pnts, xy_query, sigma):
 
 xx, yy = np.mgrid[-3:3:.02, -3:3:.02]
 xy_query = np.stack((xx.flatten(), yy.flatten())).T
-sigma = 0.1
+sigma = 1
 participants = participants_func(pnts, xy_query, sigma)
 participants_maps = participants.reshape(xx.shape[0], xx.shape[1], -1)
 plt.figure(figsize=(8, 8))
 plt.imshow(participants_maps[:,:,:3])
+# plt.scatter(pnts[:, 0], pnts[:, 1], s=180, color="r")
 plt.show()
 #%%
 # convolve with a gaussian
